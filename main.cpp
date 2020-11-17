@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdint.h>
 
 struct Mem 
 {
+    using Byte = unsigned char;
     static constexpr u32 MAX_MEM = 1024 * 64;
     Byte Data[MAX_MEM];
 };
