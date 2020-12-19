@@ -42,7 +42,7 @@ struct CPU
     Byte V : 1;
     Byte N : 1;
 
-    void Reset(Mem &memory)
+    void Reset(Mem& memory)
     {
         PC = 0xFFFC;
         SP = 0x100;
@@ -51,7 +51,7 @@ struct CPU
         memory.Initialise();
     }
 
-    Byte FetchByte(u32 Cycles, Mem &memory)
+    Byte FetchByte(u32 Cycles, Mem& memory)
     {
         Byte Data = memory[PC];
         PC++;
@@ -62,7 +62,7 @@ struct CPU
     static constexpr Byte
         INS_LDA_IM = 0xA9;
 
-    void Execute(u32 Cycles, Mem &memory)
+    void Execute(u32 Cycles, Mem& memory)
     {
         while (Cycles > 0)
         {
@@ -77,6 +77,9 @@ struct CPU
                 N = (A & 0b10000000) > 0;
             }
             break;
+            default:
+
+                break;
             }
         }
     }
@@ -87,6 +90,6 @@ int main()
     Mem mem;
     CPU cpu;
     cpu.Reset(mem);
-    cpu.Execute(2, mem); //TODO Need to find suitable debugger
+    cpu.Execute(2, mem);
     return 0;
 }
