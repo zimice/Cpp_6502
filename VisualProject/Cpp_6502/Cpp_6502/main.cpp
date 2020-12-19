@@ -24,6 +24,13 @@ struct Mem
         //assert here Address is < MAX_MEM
         return Data[Address];
     }
+    //** write 1 byte **//
+    Byte& operator[](u32 Address) 
+    {
+        //assert here Address is < MAX_MEM
+       return Data[Address];
+    }
+
 };
 
 struct CPU
@@ -42,7 +49,7 @@ struct CPU
     Byte V : 1;
     Byte N : 1;
 
-    void Reset(Mem& memory)
+    void Reset(Mem &memory)
     {
         PC = 0xFFFC;
         SP = 0x100;
@@ -51,7 +58,7 @@ struct CPU
         memory.Initialise();
     }
 
-    Byte FetchByte(u32 Cycles, Mem& memory)
+    Byte FetchByte( u32& Cycles, Mem &memory)
     {
         Byte Data = memory[PC];
         PC++;
@@ -78,8 +85,10 @@ struct CPU
             }
             break;
             default:
-
-                break;
+            {
+                printf("Instruction not handled %d", Ins);
+            }
+            break;
             }
         }
     }
@@ -90,6 +99,11 @@ int main()
     Mem mem;
     CPU cpu;
     cpu.Reset(mem);
-    cpu.Execute(2, mem);
+    //inline little program
+    mem[0xFFFC] = CPU::INS_LDA_IM;
+    mem[0xFFFD] = 0x42;
+    //inline little program
+    cpu.Execute(2, mem); //TODO Need to find suitable debugger
+    printf("Program Finished");
     return 0;
 }

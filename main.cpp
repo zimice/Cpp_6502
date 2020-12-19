@@ -24,6 +24,13 @@ struct Mem
         //assert here Address is < MAX_MEM
         return Data[Address];
     }
+    //** write 1 byte **//
+    Byte& operator[](u32 Address) 
+    {
+        //assert here Address is < MAX_MEM
+       return Data[Address];
+    }
+
 };
 
 struct CPU
@@ -77,6 +84,10 @@ struct CPU
                 N = (A & 0b10000000) > 0;
             }
             break;
+            default:
+            {
+                printf("Instruction not handled %d", Ins);
+            }
             }
         }
     }
@@ -87,6 +98,12 @@ int main()
     Mem mem;
     CPU cpu;
     cpu.Reset(mem);
+    //inline little program
+    mem[0xFFFC] = CPU::INS_LDA_IM;
+    mem[0xFFFD] = 0x42;
+    //inline little program
+
     cpu.Execute(2, mem); //TODO Need to find suitable debugger
+    printf("Program Finished");
     return 0;
 }
