@@ -25,12 +25,11 @@ struct Mem
 		return Data[Address];
 	}
 	//** write 1 byte **//
-	Byte& operator[](u32 Address)
+	Byte &operator[](u32 Address)
 	{
 		//assert here Address is < MAX_MEM
 		return Data[Address];
 	}
-
 };
 
 struct CPU
@@ -49,7 +48,7 @@ struct CPU
 	Byte V : 1;
 	Byte N : 1;
 
-	void Reset(Mem& memory)
+	void Reset(Mem &memory)
 	{
 		PC = 0xFFFC;
 		SP = 0x100;
@@ -58,20 +57,31 @@ struct CPU
 		memory.Initialise();
 	}
 
-	Byte FetchByte(u32& Cycles, Mem& memory)
+	Byte FetchByte(u32& Cycles, Mem &memory)
 	{
 		Byte Data = memory[PC];
 		PC++;
 		Cycles--;
 		return Data;
 	}
+	Byte ReadByte(u32 &Cycles,Byte Address, Mem &memory)
+	{
+		Byte Data = memory[Address];
+		Cycles--;
+		return Data;
+	}
 	//opcodes
 	static constexpr Byte
 		INS_LDA_IM = 0xA9,
-		INS_LDA_ZP = 0XA5;
-		
+		INS_LDA_ZP = 0XA5,
+		INS_LDA_ZPX = 0XB5;
+	void LDASetStatus()
+	{
+		Z = (A == 0);
+		N = (A & 0b10000000)> 0;
+	}
 
-	void Execute(u32 Cycles, Mem& memory)
+	void Execute(u32 Cycles, Mem &memory)
 	{
 		while (Cycles > 0)
 		{
@@ -82,12 +92,21 @@ struct CPU
 			{
 				Byte Value = FetchByte(Cycles, memory);
 				A = Value;
-				Z = (A == 0);
-				N = (A & 0b10000000) > 0;
+				LDASetStatus();
 			}
 			case INS_LDA_ZP:
 			{
-
+				Byte ZeroPageAddr = FetchByte(Cycles, memory);
+				ReadByte(Cycles,ZeroPageAddr, memory);
+				LDASetStatus();
+			}
+			break;
+			case INS_LDA_ZPX:
+			{
+				Byte ZeroPageAddr = FetchByte(Cycles, memory);
+				ZeroPageAddr +=X;
+				Cycles--;
+				A = ReadByte(Cycles,ZeroPageAddr,memory);
 			}
 			break;
 			default:
@@ -106,10 +125,11 @@ int main()
 	CPU cpu;
 	cpu.Reset(mem);
 	//inline little program
-	mem[0xFFFC] = CPU::INS_LDA_IM;
+	mem[0xFFFC] = CPU::INS_LDA_ZP;
 	mem[0xFFFD] = 0x42;
+	mem[0x0042] = 0x84;
 	//inline little program
-	cpu.Execute(2, mem); //TODO Need to find suitable debugger
-	printf("Program Finished");
+	cpu.Execute(3, mem); //TODO Need to find suitable debugger
+	printf("Program finished");
 	return 0;
 }
